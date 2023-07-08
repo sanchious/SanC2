@@ -1,1 +1,1 @@
-Python Command and Control (C2)
+Basic Python3 Command and Control (C2)
