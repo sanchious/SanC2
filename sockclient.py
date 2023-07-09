@@ -14,6 +14,7 @@ def inbound_message():
             return message
         except KeyboardInterrupt:
             sock.close()
+            print('[+] Keyboard interrupt issued')
             break
         except Exception:
             sock.close()

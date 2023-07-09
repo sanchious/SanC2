@@ -3,7 +3,7 @@ import sys
 
 
 def inbound_message(remote_target):
-    print(f'[+] Awaiting response')
+    print(f'[+] Awaiting response...')
     response = remote_target.recv(1024).decode()
     return response
 
@@ -27,19 +27,15 @@ def message_handler(remote_target, remote_ip):
     while True:
         try:
             message = input('Message to send#> ')
-            print('[+] Awating response...')
             if message == 'exit':
                 remote_target.send(message.encode())
                 remote_target.close()
                 print('[-] Closing the connection...')
                 break
-            remote_target.send(message.encode())
-            response = remote_target.recv(1024).decode()
-            if response == 'exit':
-                print('[-] The client has terminated the session.')
-                remote_target.close()
-                break
-            print(response)
+            elif not message:
+                continue
+            outbound_message(remote_target, message)
+            print(inbound_message(remote_target))
         except KeyboardInterrupt:
             remote_target.close()
             print('[+] Keyboard interrupt issued')
