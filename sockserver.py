@@ -53,7 +53,12 @@ def message_handler(remote_target, remote_ip):
 
 if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    host_ip = sys.argv[1]
-    host_port = int(sys.argv[2])
     banner()
-    listener_handler()
+    try:
+        host_ip = sys.argv[1]
+        host_port = int(sys.argv[2])
+        listener_handler()
+    except IndexError:
+        print('[-] Argument(s) missing.')
+    except Exception as e:
+        print(e)

