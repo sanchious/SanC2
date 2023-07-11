@@ -43,8 +43,10 @@ def message_handler(remote_target, remote_ip):
             outbound_message(remote_target, message)
             print(inbound_message(remote_target))
         except KeyboardInterrupt:
-            remote_target.close()
-            print('[+] Keyboard interrupt issued')
+            print('\n[+] Keyboard interrupt issued')
+            message = 'exit'
+            outbound_message(remote_target, message)
+            sock.close
             break
         except Exception:
             remote_target.close()
