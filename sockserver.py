@@ -24,7 +24,7 @@ def outbound_message(remote_target, message):
 def listener_handler():
     sock.bind((host_ip, int(host_port)))
     print(
-        f'[*] Listening on port {host_port}...\n[*] Awaiting connection from clinet...')
+        f'[*] Started listener on {host_ip}:{host_port}...\n')
     sock.listen()
     t1 = threading.Thread(target=message_handler)
     t1.start()
@@ -32,6 +32,8 @@ def listener_handler():
 
 def message_handler():
     while True:
+        if exit_flag == True:
+            break
         try:
             remote_target, remote_ip = sock.accept()
             sessions.append([remote_target, remote_ip[0]])
@@ -50,6 +52,8 @@ def session_handler(session_id):
             break
         elif message == 'background':
             break
+        elif not message:
+            continue
         outbound_message(session_id, message)
 
         response = inbound_message(session_id)
@@ -64,6 +68,7 @@ if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     banner()
     sessions = []
+    exit_flag = False
     try:
         host_ip = sys.argv[1]
         host_port = int(sys.argv[2])
@@ -89,7 +94,13 @@ if __name__ == '__main__':
                     num = int(command.split(' ')[2])
                     session_id = (sessions[num])[0]
                     session_handler(session_id)
+            if command == 'exit':
+                exit_flag = True
+                sock.close()
+                break
+
         except KeyboardInterrupt:
             print('\n [-] Keyboard interrupt issued.')
+            exit_flag = True
             sock.close()
             break
