@@ -1,6 +1,8 @@
 import socket
 import sys
 import threading
+import concurrent.futures
+from prettytable import PrettyTable
 
 
 def banner():
@@ -26,6 +28,9 @@ def listener_handler():
     print(
         f'[*] Started listener on {host_ip}:{host_port}...\n')
     sock.listen()
+    # with concurrent.futures.ThreadPoolExecutor() as executor:
+    # f1 = executor.submit(message_handler)
+    # f1.result()
     t1 = threading.Thread(target=message_handler)
     t1.start()
 
@@ -83,16 +88,18 @@ if __name__ == '__main__':
         try:
             command = input('Enter command#> ')
             if command.split(' ')[0] == 'sessions':
-                session_counter = 0
+                session_counter = 1
                 if command.split(' ')[1] == '-l':
-                    print('Session' + ' ' * 10 + 'Targets')
+                    table = PrettyTable()
+                    table.field_names = ['Session ID', 'Target']
+                    table.padding_width = 3
                     for target in sessions:
-                        print(str(session_counter) + ' ' *
-                              16 + str(target[1]))
+                        table.add_row([session_counter, target[1]])
                         session_counter += 1
+                    print(table)
                 if command.split(' ')[1] == '-i':
                     num = int(command.split(' ')[2])
-                    session_id = (sessions[num])[0]
+                    session_id = (sessions[num - 1])[0]
                     session_handler(session_id)
             if command == 'exit':
                 exit_flag = True
