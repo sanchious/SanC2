@@ -4,7 +4,13 @@ import subprocess
 import os
 import sys
 import ctypes
-import pwd
+if os.name == 'nt':
+    class Pwd():
+        def getpwnam(self, user):
+            pass
+    pwd = Pwd()
+else:
+    import pwd
 import platform
 
 
