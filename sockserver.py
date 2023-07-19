@@ -92,19 +92,13 @@ if __name__ == '__main__':
     banner()
     sessions = []
     exit_flag = False
-    try:
-        host_ip = sys.argv[1]
-        host_port = int(sys.argv[2])
-
-    except IndexError:
-        print('[-] Argument(s) missing.')
-    except Exception as e:
-        print(e)
-
-    listener_handler()
     while True:
         try:
             command = input('Enter command#> ')
+            if command == 'start listener':
+                host_ip = input('[*] Enter LHOST IP: ')
+                host_port = input('[*] Enter LPORT to listen on: ')
+                listener_handler()
             if command.split(' ')[0] == 'sessions':
                 session_counter = 1
                 if command.split(' ')[1] == '-l':
