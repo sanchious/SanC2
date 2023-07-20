@@ -43,7 +43,7 @@ def message_handler():
             admin = remote_target.recv(1024).decode()
             if admin == '1':
                 isAdmin = 'Yes'
-            elif admin == 'root':
+            elif username == 'root':
                 isAdmin = 'Yes'
             else:
                 isAdmin = 'No'
