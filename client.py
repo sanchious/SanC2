@@ -89,11 +89,7 @@ def session_handler():
 
 if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        host_ip = sys.argv[1]
-        host_port = int(sys.argv[2])
-        session_handler()
-    except IndexError:
-        print('[-] Argumet(s) missing.')
-    except Exception as e:
-        print(e)
+
+    host_ip = "INPUT_IP_HERE"
+    host_port = INPUT_PORT_HERE
+    session_handler()

