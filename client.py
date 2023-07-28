@@ -84,7 +84,12 @@ def session_handler():
             command = subprocess.Popen(
                 message, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output = command.stdout.read() + command.stderr.read()
-            outbound_message(output.decode())
+            return_code = command.wait()
+            if not output and return_code == 0:
+                output = 'No output with return code "0"'
+                outbound_message(output)
+            else:
+                outbound_message(output.decode())
 
 
 if __name__ == '__main__':
