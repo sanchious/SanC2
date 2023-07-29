@@ -1,6 +1,8 @@
 Simple Command and Control Server (C2)
+
 Overview:
-This project showcases the development of a Command and Control (C2) server implementedn with Python. A C2 server acts as a central hub for managing and controlling remote devices and/or connections. The server facilitates seamless communication between the control infrastructure and connected devices, enabling the execution of commands, data retrieval, and overall coordination.
+
+This project showcases the development of a Command and Control (C2) server implemented with Python. A C2 server acts as a central hub for managing and controlling remote devices and/or connections. The server facilitates seamless communication between the control infrastructure and connected devices, enabling the execution of commands, data retrieval, and overall coordination.
 
 Features:
 
