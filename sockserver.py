@@ -56,7 +56,7 @@ def listener_handler():
     t1.start()
 
 
-# Processing receiving connections details with 3 additional initial messages: Username, isAdmin, platform type and storing them into Sessions list.
+# Processing received connections details with 3 additional initial messages: Username, isAdmin, platform type and storing them into Sessions list.
 def message_handler():
     while True:
         if exit_flag == True:
@@ -76,18 +76,12 @@ def message_handler():
             date = datetime.now()
             time_stamp = (
                 f"{date.month}/{date.day}/{date.year} {current_time}")
-            host_name = socket.gethostbyaddr(remote_ip[0])
-            if host_name is not None:
-                sessions.append(
-                    [remote_target, f"{host_name[0]}@{remote_ip[0]}", time_stamp, username, isAdmin, platform])
-                print(
-                    f'\n[*] Connection received from {host_name[0]}@{remote_ip[0]} \nEnter command#> ', end='')
-            else:
-                sessions.append(
-                    [remote_target, remote_ip[0], time_stamp, username, isAdmin, platform])
-                print(
-                    f'\n[*] Connection received from {remote_ip[0]} \nEnter command#> ', end='')
+            sessions.append(
+                [remote_target, remote_ip[0], time_stamp, username, isAdmin, platform])
+            print(
+                f'\n[*] Connection received from {remote_ip[0]} \nEnter command#> ', end='')
         except:
+            print('Something went wrong with message handler...')
             pass
 
 
