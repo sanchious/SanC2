@@ -297,8 +297,14 @@ if __name__ == '__main__':
                         '[-] You cannot generate a payload without an active listener.')
 
         except KeyboardInterrupt:
-            print('\n[-] Keyboard interrupt issued.')
-            should_close_socket = True
-            sock.close()
+            message = input('\n[-] Do you really want to quit? (y/n)').lower()
+            if message == 'y':
+                # session_length = len(sessions)
+                for session in sessions:
+                    outbound_message(session[0], 'exit')
+                should_close_socket = True
+                if listener_counter > 0:
+                    sock.close()
+                break
         except Exception as e:
             print(e)
