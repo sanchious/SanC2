@@ -308,7 +308,10 @@ if __name__ == '__main__':
             if message == 'y':
                 # session_length = len(sessions)
                 for session in sessions:
-                    outbound_message(session[0], 'exit')
+                    if session[6] == 'Dead':
+                        pass
+                    else:
+                        outbound_message(session[0], 'exit')
                 should_close_socket = True
                 if listener_counter > 0:
                     sock.close()
