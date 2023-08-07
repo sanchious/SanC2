@@ -28,7 +28,7 @@ def inbound_message(remote_target):
 
 
 # Handling outbound message based on the target connection - sending encoded message
-def outbound_message(remote_target, message):
+def outbound_message(session_id, message):
     session_id.send(message.encode())
 
 
