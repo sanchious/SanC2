@@ -118,7 +118,7 @@ def session_handler(session_id):
             break
         if message == 'help':
             message = ''
-            print('Help menu here!')
+            help()
             pass
         if message == 'add persistence':
 
@@ -269,6 +269,38 @@ def pwsh_enc():
     print(f'\n[*] Decoded command:\npowershell {cradle_decoded}')
 
 
+# Help menu
+def help():
+    core_table = PrettyTable()
+    core_table.field_names = ['Command', 'Description']
+    core_table.padding_width = 1
+    core_table.align = "l"
+    core_table.add_rows([
+        ['help', 'Help Menu'],
+        ['start listener', 'Start a listener on host/interface and port specified'],
+        ['generate payload', 'Create a python payload used to connect back to server based on the listener\'s IP,PORT'],
+        ['sessions -l', 'List sessions'],
+        ['sessions -i <session id>', 'Interact with the specified session'],
+        ['kill <session id>', 'Kills the specified session'],
+        ['pwsh enc', 'Creates an encrypted powershell command based on user input']
+    ])
+    session_table = PrettyTable()
+    session_table.field_names = ['Command', 'Description']
+    session_table.padding_width = 1
+    session_table.align = "l"
+    session_table.add_rows([
+        ['background', 'Backgrounds the current session'],
+        ['add persistence', 'adds persistence depending on the system os'],
+        ['remove persistence', 'Cleans up added persistence'],
+        ['exit', 'Terminates the current session']
+    ])
+
+    print('\nCore Commands\n=============\n')
+    print(core_table)
+    print('\nSession Commands\n================\n')
+    print(session_table)
+
+
 if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     banner()
@@ -324,6 +356,9 @@ if __name__ == '__main__':
                 else:
                     print(
                         '[-] You cannot generate a payload without an active listener.')
+
+            if command == 'help':
+                help()
 
         # Handling CTRL + C
         except KeyboardInterrupt:
